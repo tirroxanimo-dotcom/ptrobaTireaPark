@@ -187,7 +187,14 @@ body {
 .btn .btn-icon { font-size: 22px; }
 .btn .btn-lbl  { font-size: 14px; letter-spacing: 1px; }
 .btn:active:not(:disabled) { transform: scale(0.96); }
-.btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.btn:disabled {
+  background: #0e1318 !important;
+  color: #1e2a35 !important;
+  border-color: #1c2330 !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 .btn-up {
   background: linear-gradient(135deg, #003d1a, #005c28);
