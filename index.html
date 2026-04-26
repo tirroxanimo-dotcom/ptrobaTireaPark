@@ -3,17 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>TireaPark · PROBA-1 v2</title>
-
-<!-- PWA META -->
+<title>TireaPark · PROBA-1</title>
 <meta name="application-name" content="TireaPark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TireaPark">
 <meta name="theme-color" content="#0d1117">
 <meta name="mobile-web-app-capable" content="yes">
-
-<!-- ICONITA -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d1117'/><rect x='42' y='15' width='16' height='45' rx='8' fill='%2300e64d'/><rect x='28' y='68' width='44' height='14' rx='7' fill='%2300e64d'/></svg>">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d1117'/><rect x='42' y='15' width='16' height='45' rx='8' fill='%2300e64d'/><rect x='28' y='68' width='44' height='14' rx='7' fill='%2300e64d'/></svg>">
 
@@ -131,11 +127,11 @@ body {
   transition: border-color 0.3s;
 }
 
-.status-box.RIDICAT       { border-color: rgba(0,230,77,0.4); }
-.status-box.COBORAT       { border-color: rgba(255,60,60,0.4); }
+.status-box.RIDICAT    { border-color: rgba(0,230,77,0.4); }
+.status-box.COBORAT    { border-color: rgba(255,60,60,0.4); }
 .status-box.SE_RIDICA,
-.status-box.SE_COBOARA    { border-color: rgba(250,204,21,0.4); }
-.status-box.BLOCAT_MASINA { border-color: rgba(56,189,248,0.4); }
+.status-box.SE_COBOARA { border-color: rgba(250,204,21,0.4); }
+.status-box.MASINA     { border-color: rgba(56,189,248,0.4); }
 
 .status-label {
   font-size: 9px; letter-spacing: 2px;
@@ -148,26 +144,25 @@ body {
   color: var(--dim); transition: color 0.25s, text-shadow 0.25s;
 }
 
-.status-val.RIDICAT       { color: var(--green);  text-shadow: 0 0 20px rgba(0,230,77,0.5); }
-.status-val.COBORAT       { color: var(--red);    text-shadow: 0 0 20px rgba(255,60,60,0.5); }
+.status-val.RIDICAT    { color: var(--green);  text-shadow: 0 0 20px rgba(0,230,77,0.5); }
+.status-val.COBORAT    { color: var(--red);    text-shadow: 0 0 20px rgba(255,60,60,0.5); }
 .status-val.SE_RIDICA,
-.status-val.SE_COBOARA    { color: var(--yellow); text-shadow: 0 0 20px rgba(250,204,21,0.5); }
-.status-val.BLOCAT_MASINA { color: var(--blue);   text-shadow: 0 0 20px rgba(56,189,248,0.5); }
-.status-val.OFFLINE       { color: var(--dim); }
+.status-val.SE_COBOARA { color: var(--yellow); text-shadow: 0 0 20px rgba(250,204,21,0.5); }
+.status-val.MASINA     { color: var(--blue);   text-shadow: 0 0 20px rgba(56,189,248,0.5); }
+.status-val.OFFLINE    { color: var(--dim); }
 
 .masina-row { margin-top: 8px; font-size: 10px; color: var(--dim); letter-spacing: 1px; }
-.masina-row span { font-weight: bold; }
-.masina-row .da { color: var(--blue); }
-.masina-row .nu { color: var(--green); }
+.masina-row .da { color: var(--blue); font-weight: bold; }
 
 .progress-wrap {
   height: 3px; background: var(--border);
   border-radius: 2px; margin-top: 12px; overflow: hidden;
+  display: none;
 }
 .progress-bar {
   height: 100%; width: 0%;
   background: var(--yellow); border-radius: 2px;
-  transition: width 0.05s linear; box-shadow: 0 0 8px var(--yellow);
+  box-shadow: 0 0 8px var(--yellow);
 }
 .timer-txt {
   font-size: 10px; color: var(--yellow);
@@ -180,7 +175,7 @@ body {
   border: none; border-radius: 12px; padding: 18px 10px;
   font-family: 'Bebas Neue', sans-serif; font-size: 18px;
   letter-spacing: 2px; cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s, opacity 0.2s;
+  transition: transform 0.1s, box-shadow 0.1s;
   display: flex; flex-direction: column; align-items: center;
   gap: 4px; position: relative; overflow: hidden;
 }
@@ -231,7 +226,6 @@ body {
 .log-line.info { color: var(--blue); }
 .log-line.warn { color: var(--yellow); }
 
-/* INSTALL BANNER */
 #install-banner {
   display: none;
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -273,16 +267,16 @@ body {
     <div class="status-label">STATUS BLOCATOR</div>
     <div class="status-val OFFLINE" id="status-val">OFFLINE</div>
     <div class="masina-row" id="masina-row" style="display:none">
-      🚗 Mașină: <span id="masina-val" class="nu">NU</span>
+      🚗 Mașină detectată: <span id="masina-val" class="da">DA</span>
     </div>
-    <div class="progress-wrap" id="prog-wrap" style="display:none">
+    <div class="progress-wrap" id="prog-wrap">
       <div class="progress-bar" id="prog-bar"></div>
     </div>
     <div class="timer-txt" id="timer-txt"></div>
   </div>
 
   <div class="buttons">
-    <button class="btn btn-up" id="btn-up" onclick="sendCmd('RIDICA')" disabled>
+    <button class="btn btn-up"   id="btn-up"   onclick="sendCmd('RIDICA')"  disabled>
       <span class="btn-icon">▲</span>
       <span class="btn-lbl">RIDICĂ</span>
     </button>
@@ -298,10 +292,9 @@ body {
   </div>
 </div>
 
-<!-- INSTALL BANNER -->
 <div id="install-banner">
   <div class="banner-title">📲 Instalează TireaPark</div>
-  <div class="banner-sub">Adaugă pe ecranul principal — apare iconița ca o aplicație</div>
+  <div class="banner-sub">Adaugă pe ecranul principal</div>
   <div class="banner-btns">
     <button class="btn-install" onclick="installApp()">INSTALEAZĂ</button>
     <button class="btn-dismiss" onclick="dismissInstall()">Mai târziu</button>
@@ -309,62 +302,17 @@ body {
 </div>
 
 <script>
-// ── MANIFEST INLINE (pentru PWA fara fisier separat) ──
+// ── PWA ──
 (function() {
-  var manifest = {
-    name: "TireaPark · Blocator",
-    short_name: "TireaPark",
-    description: "Control blocator parcare",
-    start_url: ".",
-    display: "standalone",
-    background_color: "#0d1117",
-    theme_color: "#0d1117",
-    orientation: "portrait",
-    icons: [{
-      src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF8WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNy4yLWMwMDAgNzkuMWI2NWE3OWI0LCAyMDIyLzA2LzEzLTIyOjAxOjAxICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjMuNSAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjMtMDEtMDFUMDA6MDA6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjMtMDEtMDFUMDA6MDA6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIzLTAxLTAxVDAwOjAwOjAwIj4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4B",
-      sizes: "192x192",
-      type: "image/png",
-      purpose: "any maskable"
-    }]
-  };
-  var blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-  var url  = URL.createObjectURL(blob);
-  var link = document.createElement('link');
-  link.rel  = 'manifest';
-  link.href = url;
-  document.head.appendChild(link);
+  var m = {name:"TireaPark",short_name:"TireaPark",start_url:".",display:"standalone",background_color:"#0d1117",theme_color:"#0d1117",orientation:"portrait",icons:[{src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",sizes:"192x192",type:"image/png"}]};
+  var l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'}));document.head.appendChild(l);
 })();
-
-// ── SERVICE WORKER INLINE ──
-if ('serviceWorker' in navigator) {
-  var swCode = `
-    var CACHE = 'tireapark-v1';
-    self.addEventListener('install', function(e) {
-      self.skipWaiting();
-    });
-    self.addEventListener('activate', function(e) {
-      self.clients.claim();
-    });
-    self.addEventListener('fetch', function(e) {
-      if (e.request.url.includes('firebase') ||
-          e.request.url.includes('gstatic') ||
-          e.request.url.includes('googleapis') ||
-          e.request.url.includes('fonts.g')) return;
-      e.respondWith(
-        caches.match(e.request).then(function(r) { return r || fetch(e.request); })
-      );
-    });
-  `;
-  var swBlob = new Blob([swCode], {type: 'application/javascript'});
-  var swUrl  = URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swUrl, {scope: '/'})
-    .then(function() { console.log('SW OK'); })
-    .catch(function(e) { console.log('SW err:', e); });
+if('serviceWorker'in navigator){
+  var sw=`self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{self.clients.claim()});self.addEventListener('fetch',e=>{if(e.request.url.includes('firebase')||e.request.url.includes('gstatic')||e.request.url.includes('googleapis'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))});`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})),{scope:'/'});
 }
 
-// ═══════════════════════════════════════════════
-//  FIREBASE
-// ═══════════════════════════════════════════════
+// ── FIREBASE ──
 firebase.initializeApp({
   apiKey:            'AIzaSyDF63PQ9s2AG9_8ho9u6v-myzDrs_SrtbY',
   authDomain:        'tireapark.firebaseapp.com',
@@ -378,190 +326,200 @@ firebase.initializeApp({
 var db  = firebase.database();
 var ref = db.ref('blocatoare/PROBA-1');
 
-var stareReala  = 'COBORAT';
-var stareFizica = 'COBORAT';
-var timerAnim   = null;
+// ── STARE GLOBALA ──
+// pozitie = 'RIDICAT' | 'COBORAT'  → pozitia fizica a blocatorului
+// masina  = 'DA' | 'NU'            → senzor masina
+var pozitie  = 'COBORAT';
+var masina   = 'NU';
+var animRuns = false;  // true cat timp ruleaza animatia de 1.2s
 
-var elBox     = document.getElementById('status-box');
-var elVal     = document.getElementById('status-val');
-var elTimer   = document.getElementById('timer-txt');
-var elProg    = document.getElementById('prog-bar');
-var elProgW   = document.getElementById('prog-wrap');
-var elMasina  = document.getElementById('masina-row');
-var elMasinaV = document.getElementById('masina-val');
-var btnUp     = document.getElementById('btn-up');
-var btnDown   = document.getElementById('btn-down');
+// ── DOM ──
+var elBox   = document.getElementById('status-box');
+var elVal   = document.getElementById('status-val');
+var elMRow  = document.getElementById('masina-row');
+var elPWrap = document.getElementById('prog-wrap');
+var elPBar  = document.getElementById('prog-bar');
+var elTimer = document.getElementById('timer-txt');
+var btnUp   = document.getElementById('btn-up');
+var btnDown = document.getElementById('btn-down');
 
-function log(msg, type) {
+// ── LOG ──
+function addLog(msg, tip) {
   var el = document.getElementById('log');
   var d  = document.createElement('div');
-  d.className = 'log-line ' + (type || '');
-  var t  = new Date();
-  var ts = pad(t.getHours())+':'+pad(t.getMinutes())+':'+pad(t.getSeconds());
-  d.textContent = '['+ts+'] '+msg;
+  d.className = 'log-line ' + (tip || '');
+  var t = new Date();
+  d.textContent = '[' + pad(t.getHours()) + ':' + pad(t.getMinutes()) + ':' + pad(t.getSeconds()) + '] ' + msg;
   el.insertBefore(d, el.children[1] || null);
 }
-function pad(n){ return String(n).padStart(2,'0'); }
+function pad(n) { return String(n).padStart(2, '0'); }
 
-db.ref('.info/connected').on('value', function(s) {
-  var ok  = s.val();
-  document.getElementById('fb-dot').className = 'dot ' + (ok ? 'on' : 'off');
-  document.getElementById('fb-txt').textContent = ok ? 'online' : 'offline';
-  if (ok) log('Firebase conectat', 'info');
-});
-
-ref.once('value', function(snap) {
-  var data = snap.val();
-  if (!data) {
-    ref.set({ id:'PROBA-1', lat:46.7712, lng:23.5898, addr:'TEST · Str. Probei 1', price:5, hours:'08-18', free:true, status:'COBORAT', comanda:'NONE', masina_prezenta:'NU', ultima_actualizare:Date.now() });
-    stareReala  = 'COBORAT';
-    stareFizica = 'COBORAT';
-  } else {
-    var s = data.status || 'COBORAT';
-    if (s === 'SE_RIDICA' || s === 'SE_COBOARA') s = 'COBORAT';
-    stareReala  = s;
-    stareFizica = (s === 'RIDICAT') ? 'RIDICAT' : 'COBORAT';
-    if (data.masina_prezenta) updateMasina(data.masina_prezenta);
-  }
-  afiseazaStare(stareReala);
-  activeazaButoane();
-  log('Stare: ' + stareReala, 'info');
-});
-
-ref.child('status').on('value', function(s) {
-  var val = s.val();
-  if (!val) return;
-  if (val === 'RIDICAT' || val === 'COBORAT') stareFizica = val;
-  if (!timerAnim) {
-    afiseazaStare(val);
-    stareReala = val;
-    activeazaButoane();
-  }
-});
-
-ref.child('masina_prezenta').on('value', function(s) {
-  var val = s.val();
-  if (!val) return;
-  updateMasina(val);
-  if (!timerAnim) {
-    if (val === 'NU') {
-      // Masina a plecat → fortat stareFizica pe COBORAT ca sa aprinda RIDICA
-      stareFizica = 'COBORAT';
-    }
-    activeazaButoane();
-  }
-});
-
-function afiseazaStare(s) {
-  elVal.textContent = s.replace(/_/g, ' ');
-  elVal.className   = 'status-val ' + s;
-  elBox.className   = 'status-box ' + s;
+// ── AFISEAZA STARE VIZUALA ──
+function afiseaza(stare) {
+  elVal.textContent = stare.replace(/_/g, ' ');
+  elVal.className   = 'status-val ' + stare;
+  elBox.className   = 'status-box ' + stare;
 }
 
-function updateMasina(val) {
-  elMasina.style.display = 'block';
-  elMasinaV.textContent  = val;
-  elMasinaV.className    = (val === 'DA') ? 'da' : 'nu';
-}
-
-// ═══════════════════════════════════════════════
-//  LOGICA BUTOANE
-//  - Daca masina prezenta = DA → ambele blocate
-//  - Daca masina pleaca (NU)   → INTOTDEAUNA aprinde RIDICA
-//  - BLOCAT_MASINA             → ambele blocate
-// ═══════════════════════════════════════════════
-function activeazaButoane() {
-  var masinaE = (elMasinaV.textContent === 'DA');
-
-  if (stareReala === 'BLOCAT_MASINA' || masinaE) {
-    btnUp.disabled   = true;
-    btnDown.disabled = true;
+// ── UPDATE BUTOANE + UI ──
+// Aceasta functie este SINGURA care decide starea butoanelor si a UI-ului.
+// Se apeleaza dupa orice schimbare de stare.
+//
+// Reguli clare:
+//  1. Animatie in curs          → ambele OFF, UI = SE_RIDICA / SE_COBOARA (setat separat)
+//  2. Masina = DA               → ambele OFF, UI = MASINA, arata randul masina
+//  3. pozitie = RIDICAT, MA=NU → RIDICA OFF,  COBOARA ON,  UI = RIDICAT
+//  4. pozitie = COBORAT, MA=NU → RIDICA ON,   COBOARA OFF, UI = COBORAT
+function updateUI() {
+  // Cazul 1: animatie in curs — nu schimbam nimic, sendCmd gestioneaza UI-ul
+  if (animRuns) {
+    btnUp.disabled = btnDown.disabled = true;
     return;
   }
 
-  // Fara masina: butoane dupa starea fizica
-  // (cand masina pleaca, stareFizica e fortat COBORAT → aprinde RIDICA)
-  btnUp.disabled   = (stareFizica === 'RIDICAT');
-  btnDown.disabled = (stareFizica === 'COBORAT');
+  // Cazul 2: masina prezenta
+  if (masina === 'DA') {
+    btnUp.disabled   = true;
+    btnDown.disabled = true;
+    elMRow.style.display = 'block';
+    afiseaza('MASINA');
+    return;
+  }
+
+  // Cazul 3 & 4: fara masina
+  elMRow.style.display = 'none';
+
+  if (pozitie === 'RIDICAT') {
+    btnUp.disabled   = true;   // deja sus, nu mai ridici
+    btnDown.disabled = false;  // poti cobori
+    afiseaza('RIDICAT');
+  } else {
+    btnUp.disabled   = false;  // poti ridica
+    btnDown.disabled = true;   // deja jos
+    afiseaza('COBORAT');
+  }
 }
 
+// ── COMANDA ──
 function sendCmd(cmd) {
-  if (timerAnim) { clearInterval(timerAnim); timerAnim = null; }
+  var stareInter = (cmd === 'RIDICA') ? 'SE_RIDICA'  : 'SE_COBOARA';
+  var stareFinal = (cmd === 'RIDICA') ? 'RIDICAT'    : 'COBORAT';
+  var eLiber     = (cmd === 'RIDICA');
 
-  var intermediar = (cmd === 'RIDICA') ? 'SE_RIDICA'  : 'SE_COBOARA';
-  var finalStare  = (cmd === 'RIDICA') ? 'RIDICAT'    : 'COBORAT';
-  var isFree      = (cmd === 'RIDICA');
-
+  // blocheaza butoanele si arata starea intermediara
+  animRuns = true;
   btnUp.disabled = btnDown.disabled = true;
-  afiseazaStare(intermediar);
+  afiseaza(stareInter);
+  elMRow.style.display = 'none';
 
-  ref.update({ status: intermediar, comanda: cmd, comanda_timestamp: Date.now() });
-  log('▶ Comanda: ' + cmd, 'ok');
+  // scrie comanda in Firebase
+  ref.update({ status: stareInter, comanda: cmd, comanda_timestamp: Date.now() });
+  addLog('▶ ' + cmd, 'ok');
 
-  // ── TIMER 1.3 secunde ──
-  var total   = 1200;
+  // porneste timer 1.2s
+  var DURATA  = 1200;
   var elapsed = 0;
-  var step    = 50;
+  var STEP    = 50;
 
-  elProgW.style.display = 'block';
-  elProg.style.width    = '0%';
+  elPWrap.style.display = 'block';
+  elPBar.style.width    = '0%';
 
-  timerAnim = setInterval(function() {
-    elapsed += step;
-    elProg.style.width = Math.min((elapsed / total) * 100, 100) + '%';
-    elTimer.textContent = 'Finalizare în ' + ((total - elapsed) / 1000).toFixed(1) + 's...';
+  var timer = setInterval(function() {
+    elapsed += STEP;
+    elPBar.style.width  = Math.min((elapsed / DURATA) * 100, 100) + '%';
+    var ramas = ((DURATA - elapsed) / 1000).toFixed(1);
+    elTimer.textContent = ramas > 0 ? 'Finalizare în ' + ramas + 's...' : '';
 
-    if (elapsed >= total) {
-      clearInterval(timerAnim); timerAnim = null;
-      elProgW.style.display = 'none';
-      elProg.style.width    = '0%';
+    if (elapsed >= DURATA) {
+      clearInterval(timer);
+
+      // ascunde progresul
+      elPWrap.style.display = 'none';
+      elPBar.style.width    = '0%';
       elTimer.textContent   = '';
 
-      stareReala  = finalStare;
-      stareFizica = finalStare;
-      afiseazaStare(finalStare);
+      // actualizeaza starea locala
+      pozitie  = stareFinal;
+      animRuns = false;
 
-      ref.update({ status: finalStare, comanda: 'NONE', free: isFree, ultima_actualizare: Date.now() });
-      log('✓ ' + finalStare, finalStare === 'RIDICAT' ? 'ok' : 'err');
-
-      // Citeste starea reala din Firebase (inclusiv masina_prezenta) inainte de a activa butoane
-      ref.once('value', function(snap) {
-        var data = snap.val() || {};
-        if (data.masina_prezenta) updateMasina(data.masina_prezenta);
-        activeazaButoane();
+      // scrie starea finala in Firebase
+      ref.update({
+        status:             stareFinal,
+        comanda:            'NONE',
+        free:               eLiber,
+        ultima_actualizare: Date.now()
       });
+      addLog('✓ ' + stareFinal, stareFinal === 'RIDICAT' ? 'ok' : 'err');
+
+      // actualizeaza UI pe baza starii curente (pozitie + masina)
+      updateUI();
     }
-  }, step);
+  }, STEP);
 }
+
+// ── FIREBASE: CONEXIUNE ──
+db.ref('.info/connected').on('value', function(s) {
+  var ok = s.val();
+  document.getElementById('fb-dot').className = 'dot ' + (ok ? 'on' : 'off');
+  document.getElementById('fb-txt').textContent = ok ? 'online' : 'offline';
+  if (ok) addLog('Firebase conectat', 'info');
+});
+
+// ── FIREBASE: CITIRE INITIALA ──
+ref.once('value', function(snap) {
+  var d = snap.val();
+  if (!d) {
+    ref.set({
+      id: 'PROBA-1', lat: 46.7712, lng: 23.5898,
+      addr: 'TEST · Str. Probei 1', price: 5, hours: '08-18',
+      free: true, status: 'COBORAT', comanda: 'NONE',
+      masina_prezenta: 'NU', ultima_actualizare: Date.now()
+    });
+    pozitie = 'COBORAT';
+    masina  = 'NU';
+  } else {
+    var s = d.status || 'COBORAT';
+    pozitie = (s === 'RIDICAT') ? 'RIDICAT' : 'COBORAT';
+    masina  = d.masina_prezenta || 'NU';
+  }
+  addLog('Init: ' + pozitie + ' | Masina: ' + masina, 'info');
+  updateUI();
+});
+
+// ── FIREBASE: SENZOR MASINA (LIVE) ──
+// Cand senzorul se schimba in Firebase, actualizam UI imediat
+ref.child('masina_prezenta').on('value', function(s) {
+  var val = s.val();
+  if (!val) return;
+  var vechi = masina;
+  masina = val;
+  if (masina !== vechi) {
+    addLog('Senzor: ' + masina, masina === 'DA' ? 'warn' : 'info');
+    if (!animRuns) updateUI();
+  }
+});
 
 // ── PWA INSTALL ──
 var deferredPrompt = null;
-
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   deferredPrompt = e;
-  setTimeout(function() {
-    document.getElementById('install-banner').style.display = 'block';
-    log('📲 Apasa INSTALEAZA pentru iconita', 'info');
-  }, 2000);
+  setTimeout(function() { document.getElementById('install-banner').style.display = 'block'; }, 2000);
 });
-
 function installApp() {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then(function(r) {
-    log(r.outcome === 'accepted' ? '✓ Instalat!' : 'Anulat', r.outcome === 'accepted' ? 'ok' : 'warn');
+    addLog(r.outcome === 'accepted' ? '✓ Instalat!' : 'Anulat', r.outcome === 'accepted' ? 'ok' : 'warn');
     deferredPrompt = null;
     document.getElementById('install-banner').style.display = 'none';
   });
 }
-
 function dismissInstall() {
   document.getElementById('install-banner').style.display = 'none';
 }
-
 window.addEventListener('appinstalled', function() {
-  log('✓ TireaPark pe ecran principal!', 'ok');
+  addLog('✓ TireaPark instalat!', 'ok');
 });
 </script>
 </body>
