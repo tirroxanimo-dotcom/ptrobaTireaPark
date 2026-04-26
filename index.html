@@ -378,9 +378,9 @@ firebase.initializeApp({
 var db  = firebase.database();
 var ref = db.ref('blocatoare/PROBA-1');
 
-var stareReala = 'COBORAT';  // starea blocatorului
-var stareFizica = 'COBORAT'; // RIDICAT sau COBORAT (fara BLOCAT_MASINA/LIBER)
-var timerAnim  = null;
+var stareReala  = 'COBORAT';
+var stareFizica = 'COBORAT';
+var timerAnim   = null;
 
 var elBox     = document.getElementById('status-box');
 var elVal     = document.getElementById('status-val');
@@ -414,11 +414,13 @@ ref.once('value', function(snap) {
   var data = snap.val();
   if (!data) {
     ref.set({ id:'PROBA-1', lat:46.7712, lng:23.5898, addr:'TEST · Str. Probei 1', price:5, hours:'08-18', free:true, status:'COBORAT', comanda:'NONE', masina_prezenta:'NU', ultima_actualizare:Date.now() });
-    stareReala = 'COBORAT';
+    stareReala  = 'COBORAT';
+    stareFizica = 'COBORAT';
   } else {
     var s = data.status || 'COBORAT';
     if (s === 'SE_RIDICA' || s === 'SE_COBOARA') s = 'COBORAT';
-    stareReala = s;
+    stareReala  = s;
+    stareFizica = (s === 'RIDICAT') ? 'RIDICAT' : 'COBORAT';
     if (data.masina_prezenta) updateMasina(data.masina_prezenta);
   }
   afiseazaStare(stareReala);
@@ -429,14 +431,21 @@ ref.once('value', function(snap) {
 ref.child('status').on('value', function(s) {
   var val = s.val();
   if (!val) return;
-  // salveaza starea fizica reala (ignoram BLOCAT_MASINA si LIBER)
   if (val === 'RIDICAT' || val === 'COBORAT') stareFizica = val;
-  if (!timerAnim) { afiseazaStare(val); stareReala = val; activeazaButoane(); }
+  if (!timerAnim) {
+    afiseazaStare(val);
+    stareReala = val;
+    activeazaButoane();
+  }
 });
 
 ref.child('masina_prezenta').on('value', function(s) {
   var val = s.val();
-  if (val) updateMasina(val);
+  if (val) {
+    updateMasina(val);
+    // Recalculeaza butoanele live cand se schimba senzorul
+    if (!timerAnim) activeazaButoane();
+  }
 });
 
 function afiseazaStare(s) {
@@ -451,16 +460,24 @@ function updateMasina(val) {
   elMasinaV.className    = (val === 'DA') ? 'da' : 'nu';
 }
 
+// ═══════════════════════════════════════════════
+//  LOGICA BUTOANE
+//  - Daca masina prezenta = DA → ambele blocate
+//  - Daca masina pleaca (NU)   → INTOTDEAUNA aprinde RIDICA
+//  - BLOCAT_MASINA             → ambele blocate
+// ═══════════════════════════════════════════════
 function activeazaButoane() {
-  var blocat = (stareReala === 'BLOCAT_MASINA');
-  if (blocat) {
+  var masinaE = (elMasinaV.textContent === 'DA');
+
+  if (stareReala === 'BLOCAT_MASINA' || masinaE) {
     btnUp.disabled   = true;
     btnDown.disabled = true;
     return;
   }
-  // foloseste starea fizica reala pentru butoane
-  btnUp.disabled   = (stareFizica === 'RIDICAT');
-  btnDown.disabled = (stareFizica === 'COBORAT');
+
+  // Dupa ce masina pleaca, intotdeauna aprinde RIDICA
+  btnUp.disabled   = false;
+  btnDown.disabled = true;
 }
 
 function sendCmd(cmd) {
@@ -494,11 +511,20 @@ function sendCmd(cmd) {
       elProgW.style.display = 'none';
       elProg.style.width    = '0%';
       elTimer.textContent   = '';
-      stareReala = finalStare;
+
+      stareReala  = finalStare;
+      stareFizica = finalStare;
       afiseazaStare(finalStare);
+
       ref.update({ status: finalStare, comanda: 'NONE', free: isFree, ultima_actualizare: Date.now() });
       log('✓ ' + finalStare, finalStare === 'RIDICAT' ? 'ok' : 'err');
-      activeazaButoane();
+
+      // Citeste starea reala din Firebase (inclusiv masina_prezenta) inainte de a activa butoane
+      ref.once('value', function(snap) {
+        var data = snap.val() || {};
+        if (data.masina_prezenta) updateMasina(data.masina_prezenta);
+        activeazaButoane();
+      });
     }
   }, step);
 }
