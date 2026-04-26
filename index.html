@@ -378,7 +378,8 @@ firebase.initializeApp({
 var db  = firebase.database();
 var ref = db.ref('blocatoare/PROBA-1');
 
-var stareReala = 'COBORAT';
+var stareReala = 'COBORAT';  // starea blocatorului
+var stareFizica = 'COBORAT'; // RIDICAT sau COBORAT (fara BLOCAT_MASINA/LIBER)
 var timerAnim  = null;
 
 var elBox     = document.getElementById('status-box');
@@ -428,6 +429,8 @@ ref.once('value', function(snap) {
 ref.child('status').on('value', function(s) {
   var val = s.val();
   if (!val) return;
+  // salveaza starea fizica reala (ignoram BLOCAT_MASINA si LIBER)
+  if (val === 'RIDICAT' || val === 'COBORAT') stareFizica = val;
   if (!timerAnim) { afiseazaStare(val); stareReala = val; activeazaButoane(); }
 });
 
@@ -450,8 +453,14 @@ function updateMasina(val) {
 
 function activeazaButoane() {
   var blocat = (stareReala === 'BLOCAT_MASINA');
-  btnUp.disabled   = (stareReala === 'RIDICAT') || blocat;
-  btnDown.disabled = (stareReala === 'COBORAT') || blocat;
+  if (blocat) {
+    btnUp.disabled   = true;
+    btnDown.disabled = true;
+    return;
+  }
+  // foloseste starea fizica reala pentru butoane
+  btnUp.disabled   = (stareFizica === 'RIDICAT');
+  btnDown.disabled = (stareFizica === 'COBORAT');
 }
 
 function sendCmd(cmd) {
