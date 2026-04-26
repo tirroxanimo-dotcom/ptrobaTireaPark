@@ -402,6 +402,7 @@ function updateUI() {
 
 // ── COMANDA ──
 function sendCmd(cmd) {
+  if (animRuns) return; // ignora daca animatia deja ruleaza
   var stareInter = (cmd === 'RIDICA') ? 'SE_RIDICA'  : 'SE_COBOARA';
   var stareFinal = (cmd === 'RIDICA') ? 'RIDICAT'    : 'COBORAT';
   var eLiber     = (cmd === 'RIDICA');
@@ -466,7 +467,10 @@ db.ref('.info/connected').on('value', function(s) {
 });
 
 // ── FIREBASE: CITIRE INITIALA ──
+var initDone = false;
 ref.once('value', function(snap) {
+  if (initDone) return; // ruleaza o singura data
+  initDone = true;
   var d = snap.val();
   if (!d) {
     ref.set({
@@ -483,7 +487,7 @@ ref.once('value', function(snap) {
     masina  = d.masina_prezenta || 'NU';
   }
   addLog('Init: ' + pozitie + ' | Masina: ' + masina, 'info');
-  updateUI();
+  if (!animRuns) updateUI();
 });
 
 // ── FIREBASE: SENZOR MASINA (LIVE) ──
