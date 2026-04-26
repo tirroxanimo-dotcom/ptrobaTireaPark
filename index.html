@@ -441,10 +441,14 @@ ref.child('status').on('value', function(s) {
 
 ref.child('masina_prezenta').on('value', function(s) {
   var val = s.val();
-  if (val) {
-    updateMasina(val);
-    // Recalculeaza butoanele live cand se schimba senzorul
-    if (!timerAnim) activeazaButoane();
+  if (!val) return;
+  updateMasina(val);
+  if (!timerAnim) {
+    if (val === 'NU') {
+      // Masina a plecat → fortat stareFizica pe COBORAT ca sa aprinda RIDICA
+      stareFizica = 'COBORAT';
+    }
+    activeazaButoane();
   }
 });
 
@@ -475,9 +479,10 @@ function activeazaButoane() {
     return;
   }
 
-  // Dupa ce masina pleaca, intotdeauna aprinde RIDICA
-  btnUp.disabled   = false;
-  btnDown.disabled = true;
+  // Fara masina: butoane dupa starea fizica
+  // (cand masina pleaca, stareFizica e fortat COBORAT → aprinde RIDICA)
+  btnUp.disabled   = (stareFizica === 'RIDICAT');
+  btnDown.disabled = (stareFizica === 'COBORAT');
 }
 
 function sendCmd(cmd) {
