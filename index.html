@@ -3,18 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>TireaPark · PROBA-1</title>
-<meta name="application-name" content="TireaPark">
+<title>TireaPark · BLE · PROBA-1</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TireaPark">
+<meta name="apple-mobile-web-app-title" content="TireaPark BLE">
 <meta name="theme-color" content="#0d1117">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230d1117'/%3E%3Crect x='42' y='10' width='16' height='38' rx='8' fill='%2300e64d'/%3E%3Crect x='28' y='55' width='44' height='13' rx='6' fill='%2300e64d'/%3E%3Ctext x='50' y='90' font-family='Arial,sans-serif' font-weight='bold' font-size='18' fill='%2300e64d' text-anchor='middle'%3EPROBA%3C/text%3E%3C/svg%3E">
-<link rel="apple-touch-icon" id="apple-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230d1117'/%3E%3Crect x='42' y='10' width='16' height='38' rx='8' fill='%2300e64d'/%3E%3Crect x='28' y='55' width='44' height='13' rx='6' fill='%2300e64d'/%3E%3Ctext x='50' y='90' font-family='Arial,sans-serif' font-weight='bold' font-size='18' fill='%2300e64d' text-anchor='middle'%3EPROBA%3C/text%3E%3C/svg%3E">
-
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap');
@@ -26,6 +20,7 @@
   --red:    #ff3c3c;
   --yellow: #facc15;
   --blue:   #38bdf8;
+  --purple: #a855f7;
   --bg:     #080b10;
   --card:   #0e1318;
   --border: #1c2330;
@@ -49,8 +44,8 @@ body {
   padding: 16px;
   min-height: 100dvh;
   background-image:
-    linear-gradient(rgba(0,230,77,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,230,77,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(168,85,247,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168,85,247,0.03) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 
@@ -61,7 +56,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 20px;
   padding: 24px 20px 20px;
-  box-shadow: 0 0 60px rgba(0,230,77,0.06), 0 20px 40px rgba(0,0,0,0.6);
+  box-shadow: 0 0 60px rgba(168,85,247,0.06), 0 20px 40px rgba(0,0,0,0.6);
   position: relative;
   overflow: hidden;
 }
@@ -71,7 +66,7 @@ body {
   position: absolute;
   top: 0; left: 10%; right: 10%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  background: linear-gradient(90deg, transparent, var(--purple), transparent);
 }
 
 .header {
@@ -85,8 +80,8 @@ body {
 
 .logo-icon {
   width: 36px; height: 36px;
-  background: #0a1a0f;
-  border: 1px solid var(--green);
+  background: #0a0a1a;
+  border: 1px solid var(--purple);
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   font-size: 18px;
@@ -102,18 +97,39 @@ body {
 
 .logo-sub { font-size: 9px; color: var(--dim); letter-spacing: 1px; margin-top: 1px; }
 
-.fb-dot-wrap {
+.ble-dot-wrap {
   display: flex; align-items: center; gap: 6px;
   font-size: 9px; color: var(--dim); letter-spacing: 0.5px;
 }
 
 .dot {
   width: 7px; height: 7px; border-radius: 50%;
-  background: var(--dim); transition: background 0.3s;
+  background: var(--dim);
   box-shadow: 0 0 6px currentColor;
+  transition: background 0.3s;
 }
-.dot.on  { background: var(--green); box-shadow: 0 0 8px var(--green); }
-.dot.off { background: var(--red);   box-shadow: 0 0 8px var(--red); }
+.dot.connected    { background: var(--green);  box-shadow: 0 0 8px var(--green); }
+.dot.disconnected { background: var(--red);    box-shadow: 0 0 8px var(--red); }
+.dot.scanning     { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); animation: pulse 1s infinite; }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.btn-ble {
+  background: linear-gradient(135deg, #1a0a2e, #2d1060);
+  color: var(--purple);
+  border: 1px solid rgba(168,85,247,0.4);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.2s;
+}
+.btn-ble:active { opacity: 0.7; }
+.btn-ble:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .status-box {
   background: #060a0e;
@@ -122,8 +138,6 @@ body {
   padding: 18px 16px 14px;
   text-align: center;
   margin-bottom: 16px;
-  position: relative;
-  overflow: hidden;
   transition: border-color 0.3s;
 }
 
@@ -132,6 +146,7 @@ body {
 .status-box.SE_RIDICA,
 .status-box.SE_COBOARA    { border-color: rgba(250,204,21,0.4); }
 .status-box.BLOCAT_MASINA { border-color: rgba(56,189,248,0.4); }
+.status-box.OFFLINE       { border-color: rgba(168,85,247,0.2); }
 
 .status-label {
   font-size: 9px; letter-spacing: 2px;
@@ -149,15 +164,14 @@ body {
 .status-val.SE_RIDICA,
 .status-val.SE_COBOARA    { color: var(--yellow); text-shadow: 0 0 20px rgba(250,204,21,0.5); }
 .status-val.BLOCAT_MASINA { color: var(--blue);   text-shadow: 0 0 20px rgba(56,189,248,0.5); }
-.status-val.OFFLINE       { color: var(--dim); }
+.status-val.OFFLINE       { color: var(--purple); text-shadow: 0 0 20px rgba(168,85,247,0.3); }
 
 .masina-row { margin-top: 8px; font-size: 10px; color: var(--dim); letter-spacing: 1px; }
 .masina-row .da { color: var(--blue); font-weight: bold; }
 
 .progress-wrap {
   height: 3px; background: var(--border);
-  border-radius: 2px; margin-top: 12px; overflow: hidden;
-  display: none;
+  border-radius: 2px; margin-top: 12px; overflow: hidden; display: none;
 }
 .progress-bar {
   height: 100%; width: 0%;
@@ -175,12 +189,12 @@ body {
   border: none; border-radius: 12px; padding: 18px 10px;
   font-family: 'Bebas Neue', sans-serif; font-size: 18px;
   letter-spacing: 2px; cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s;
   display: flex; flex-direction: column; align-items: center;
   gap: 4px; position: relative; overflow: hidden;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  transition: transform 0.1s;
 }
 .btn .btn-icon { font-size: 22px; }
 .btn .btn-lbl  { font-size: 14px; letter-spacing: 1px; }
@@ -205,19 +219,11 @@ body {
   box-shadow: 0 4px 20px rgba(255,60,60,0.15);
 }
 
-.btn::after {
-  content: ''; position: absolute; border-radius: 50%;
-  background: rgba(255,255,255,0.15); width: 0; height: 0;
-  top: 50%; left: 50%; transform: translate(-50%,-50%);
-  transition: width 0.3s, height 0.3s, opacity 0.3s; opacity: 0;
-}
-.btn:active::after { width: 200px; height: 200px; opacity: 1; transition: 0s; }
-
 .log-header { font-size: 9px; color: var(--dim); letter-spacing: 2px; margin-bottom: 6px; text-transform: uppercase; }
 
 .log {
   background: #060a0e; border: 1px solid var(--border);
-  border-radius: 10px; padding: 10px; height: 120px;
+  border-radius: 10px; padding: 10px; height: 110px;
   overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent;
 }
 .log::-webkit-scrollbar { width: 3px; }
@@ -226,27 +232,21 @@ body {
 .log-line { font-size: 9px; padding: 2px 0; border-bottom: 1px solid #0e1318; color: var(--dim); }
 .log-line.ok   { color: var(--green); }
 .log-line.err  { color: var(--red); }
-.log-line.info { color: var(--blue); }
+.log-line.info { color: var(--purple); }
 .log-line.warn { color: var(--yellow); }
 
-#install-banner {
+.no-ble {
   display: none;
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  background: #0e1318; border: 1px solid var(--green);
-  border-radius: 14px; padding: 14px 18px;
-  width: calc(100% - 32px); max-width: 360px;
-  box-shadow: 0 0 30px rgba(0,230,77,0.2);
-  z-index: 999; animation: slideUp 0.3s ease;
+  background: rgba(168,85,247,0.1);
+  border: 1px solid rgba(168,85,247,0.3);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--purple);
+  margin-bottom: 14px;
+  letter-spacing: 0.5px;
 }
-@keyframes slideUp {
-  from { transform: translateX(-50%) translateY(30px); opacity: 0; }
-  to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
-}
-#install-banner .banner-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: #fff; letter-spacing: 1px; margin-bottom: 4px; }
-#install-banner .banner-sub   { font-size: 10px; color: var(--dim); margin-bottom: 12px; }
-#install-banner .banner-btns  { display: flex; gap: 8px; }
-#install-banner .btn-install  { flex: 1; padding: 10px; background: var(--green); color: #000; border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 1px; cursor: pointer; }
-#install-banner .btn-dismiss  { padding: 10px 14px; background: transparent; color: var(--dim); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; cursor: pointer; font-family: 'Space Mono', monospace; }
 </style>
 </head>
 <body>
@@ -257,20 +257,26 @@ body {
       <div class="logo-icon">🅿</div>
       <div>
         <div class="logo-text">TireaPark</div>
-        <div class="logo-sub">BLOCATOR · PROBA-1</div>
+        <div class="logo-sub">BLE · PROBA-1</div>
       </div>
     </div>
-    <div class="fb-dot-wrap">
-      <div class="dot" id="fb-dot"></div>
-      <span id="fb-txt">—</span>
+    <div class="ble-dot-wrap">
+      <div class="dot" id="ble-dot"></div>
+      <span id="ble-txt">—</span>
+      <button class="btn-ble" id="btn-ble" onclick="conecteazaBLE()">CONECTEAZĂ</button>
     </div>
+  </div>
+
+  <div class="no-ble" id="no-ble">
+    ⚠️ Browserul tău nu suportă Web Bluetooth.<br>
+    Folosește Chrome pe Android.
   </div>
 
   <div class="status-box OFFLINE" id="status-box">
     <div class="status-label">STATUS BLOCATOR</div>
     <div class="status-val OFFLINE" id="status-val">OFFLINE</div>
     <div class="masina-row" id="masina-row" style="display:none">
-      🚗 Mașină detectată: <span id="masina-val" class="da">DA</span>
+      🚗 Mașină detectată: <span class="da">DA</span>
     </div>
     <div class="progress-wrap" id="prog-wrap">
       <div class="progress-bar" id="prog-bar"></div>
@@ -295,105 +301,41 @@ body {
   </div>
 </div>
 
-<div id="install-banner">
-  <div class="banner-title">📲 Instalează TireaPark</div>
-  <div class="banner-sub">Adaugă pe ecranul principal</div>
-  <div class="banner-btns">
-    <button class="btn-install" onclick="installApp()">INSTALEAZĂ</button>
-    <button class="btn-dismiss" onclick="dismissInstall()">Mai târziu</button>
-  </div>
-</div>
-
 <script>
-// ── PWA ICON cu text PROBA ──
-(function() {
-  var c = document.createElement('canvas');
-  c.width = c.height = 192;
-  var ctx = c.getContext('2d');
+// ── UUIDs (trebuie sa fie identice cu ESP32) ──
+var SERVICE_UUID  = '12345678-1234-1234-1234-123456789abc';
+var STATUS_UUID   = '12345678-1234-1234-1234-123456789ab1';
+var COMANDA_UUID  = '12345678-1234-1234-1234-123456789ab2';
 
-  // Fundal negru cu colturi rotunde
-  ctx.fillStyle = '#0d1117';
-  ctx.beginPath();
-  ctx.roundRect(0, 0, 192, 192, 38);
-  ctx.fill();
-
-  // Bara verticala (simbolul blocatorului)
-  ctx.fillStyle = '#00e64d';
-  ctx.beginPath();
-  ctx.roundRect(80, 18, 32, 72, 16);
-  ctx.fill();
-
-  // Bara orizontala (baza blocatorului)
-  ctx.fillStyle = '#00e64d';
-  ctx.beginPath();
-  ctx.roundRect(52, 100, 88, 26, 12);
-  ctx.fill();
-
-  // Text PROBA
-  ctx.fillStyle = '#00e64d';
-  ctx.font = 'bold 36px Arial, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText('PROBA', 96, 168);
-
-  var iconData = c.toDataURL('image/png');
-
-  // Seteaza apple-touch-icon cu PNG generat
-  var link = document.getElementById('apple-icon');
-  if (link) link.href = iconData;
-
-  // Manifest PWA cu icon real
-  var m = {
-    name: "TireaPark PROBA",
-    short_name: "PROBA",
-    start_url: ".",
-    display: "standalone",
-    background_color: "#0d1117",
-    theme_color: "#0d1117",
-    orientation: "portrait",
-    icons: [
-      { src: iconData, sizes: "192x192", type: "image/png" },
-      { src: iconData, sizes: "512x512", type: "image/png" }
-    ]
-  };
-  var l = document.createElement('link');
-  l.rel = 'manifest';
-  l.href = URL.createObjectURL(new Blob([JSON.stringify(m)], {type: 'application/json'}));
-  document.head.appendChild(l);
-})();
-if('serviceWorker'in navigator){
-  var sw=`self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{self.clients.claim()});self.addEventListener('fetch',e=>{if(e.request.url.includes('firebase')||e.request.url.includes('gstatic')||e.request.url.includes('googleapis'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))});`;
-  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})),{scope:'/'});
-}
-
-// ── FIREBASE ──
-firebase.initializeApp({
-  apiKey:            'AIzaSyDF63PQ9s2AG9_8ho9u6v-myzDrs_SrtbY',
-  authDomain:        'tireapark.firebaseapp.com',
-  databaseURL:       'https://tireapark-default-rtdb.firebaseio.com',
-  projectId:         'tireapark',
-  storageBucket:     'tireapark.firebasestorage.app',
-  messagingSenderId: '503087510644',
-  appId:             '1:503087510644:web:18d5e122c67afe110e8d21'
-});
-
-var db  = firebase.database();
-var ref = db.ref('blocatoare/PROBA-1');
-
-// ── STARE GLOBALA ──
-var pozitie    = 'COBORAT';
-var masina     = 'NU';
-var cmdPending = false;  // TRUE din momentul apasarii pana cand ESP32 confirma starea finala
+// ── STARE ──
+var pozitie      = 'COBORAT';
+var masina       = 'NU';
+var cmdPending   = false;
+var bleDevice    = null;
+var bleServer    = null;
+var charStatus   = null;
+var charComanda  = null;
+var progTimer    = null;
 
 // ── DOM ──
-var elBox   = document.getElementById('status-box');
-var elVal   = document.getElementById('status-val');
-var elMRow  = document.getElementById('masina-row');
-var elPWrap = document.getElementById('prog-wrap');
-var elPBar  = document.getElementById('prog-bar');
-var elTimer = document.getElementById('timer-txt');
-var btnUp   = document.getElementById('btn-up');
-var btnDown = document.getElementById('btn-down');
+var elBox    = document.getElementById('status-box');
+var elVal    = document.getElementById('status-val');
+var elMRow   = document.getElementById('masina-row');
+var elPWrap  = document.getElementById('prog-wrap');
+var elPBar   = document.getElementById('prog-bar');
+var elTimer  = document.getElementById('timer-txt');
+var btnUp    = document.getElementById('btn-up');
+var btnDown  = document.getElementById('btn-down');
+var btnBLE   = document.getElementById('btn-ble');
+var elDot    = document.getElementById('ble-dot');
+var elTxt    = document.getElementById('ble-txt');
+
+// ── Verifica suport Web Bluetooth ──
+if (!navigator.bluetooth) {
+  document.getElementById('no-ble').style.display = 'block';
+  btnBLE.disabled = true;
+  addLog('Web Bluetooth nu e suportat!', 'err');
+}
 
 // ── LOG ──
 function addLog(msg, tip) {
@@ -406,7 +348,7 @@ function addLog(msg, tip) {
 }
 function pad(n) { return String(n).padStart(2, '0'); }
 
-// ── AFISEAZA STARE VIZUALA ──
+// ── AFISEAZA STARE ──
 function afiseaza(stare) {
   var label = stare.replace(/_/g, ' ');
   if (stare === 'BLOCAT_MASINA') label = 'MASINA';
@@ -415,15 +357,14 @@ function afiseaza(stare) {
   elBox.className   = 'status-box ' + stare;
 }
 
-// ── UPDATE BUTOANE + UI ──
+// ── UPDATE UI ──
 function updateUI() {
-  if (cmdPending) {
+  if (cmdPending || !charComanda) {
     btnUp.disabled = btnDown.disabled = true;
     return;
   }
   if (masina === 'DA') {
-    btnUp.disabled   = true;
-    btnDown.disabled = true;
+    btnUp.disabled = btnDown.disabled = true;
     elMRow.style.display = 'block';
     afiseaza('BLOCAT_MASINA');
     return;
@@ -440,37 +381,132 @@ function updateUI() {
   }
 }
 
-// ── PROGRES LOCAL (doar vizual, 1.2s) ──
-var progTimer = null;
-
+// ── PROGRES ──
 function startProgres(durata) {
   if (progTimer) { clearInterval(progTimer); progTimer = null; }
   var elapsed = 0;
-  var STEP = 50;
   elPWrap.style.display = 'block';
-  elPBar.style.width    = '0%';
+  elPBar.style.width = '0%';
   progTimer = setInterval(function() {
-    elapsed += STEP;
-    elPBar.style.width  = Math.min((elapsed / durata) * 100, 100) + '%';
+    elapsed += 50;
+    elPBar.style.width = Math.min((elapsed / durata) * 100, 100) + '%';
     var ramas = ((durata - elapsed) / 1000).toFixed(1);
     elTimer.textContent = ramas > 0 ? 'Finalizare în ' + ramas + 's...' : '';
     if (elapsed >= durata) {
-      clearInterval(progTimer);
-      progTimer = null;
+      clearInterval(progTimer); progTimer = null;
       elPWrap.style.display = 'none';
-      elPBar.style.width    = '0%';
-      elTimer.textContent   = '';
+      elPBar.style.width = '0%';
+      elTimer.textContent = '';
     }
-  }, STEP);
+  }, 50);
 }
 
-// ── COMANDA ──
-// HTML scrie DOAR comanda in Firebase.
-// ESP32 gestioneaza singur status-ul.
-// HTML asteapta confirmarea prin listener-ul pe /status.
-function sendCmd(cmd) {
-  if (cmdPending) return;          // protectie dublu-tap
-  cmdPending = true;               // blocare IMEDIATA, sincrona
+// ── CONECTARE BLE ──
+async function conecteazaBLE() {
+  if (!navigator.bluetooth) return;
+  try {
+    addLog('Caut TireaPark-PROBA1...', 'info');
+    elDot.className = 'dot scanning';
+    elTxt.textContent = 'scanare...';
+    btnBLE.disabled = true;
+
+    bleDevice = await navigator.bluetooth.requestDevice({
+      filters: [{ name: 'TireaPark-PROBA1' }],
+      optionalServices: [SERVICE_UUID]
+    });
+
+    bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+    addLog('Conectez la ' + bleDevice.name + '...', 'info');
+    bleServer = await bleDevice.gatt.connect();
+
+    var service = await bleServer.getPrimaryService(SERVICE_UUID);
+
+    // Caracteristica STATUS (citire + notify)
+    charStatus = await service.getCharacteristic(STATUS_UUID);
+    await charStatus.startNotifications();
+    charStatus.addEventListener('characteristicvaluechanged', onStatusChanged);
+
+    // Citire status initial
+    var val = await charStatus.readValue();
+    var status = new TextDecoder().decode(val);
+    proceseazaStatus(status);
+
+    // Caracteristica COMANDA (scriere)
+    charComanda = await service.getCharacteristic(COMANDA_UUID);
+
+    // UI conectat
+    elDot.className = 'dot connected';
+    elTxt.textContent = 'conectat';
+    btnBLE.textContent = 'DECONECTEAZĂ';
+    btnBLE.disabled = false;
+    btnBLE.onclick = deconecteazaBLE;
+    addLog('✓ BLE conectat!', 'ok');
+    updateUI();
+
+  } catch (err) {
+    addLog('Eroare: ' + err.message, 'err');
+    elDot.className = 'dot disconnected';
+    elTxt.textContent = 'eroare';
+    btnBLE.disabled = false;
+  }
+}
+
+// ── DECONECTARE ──
+function deconecteazaBLE() {
+  if (bleDevice && bleDevice.gatt.connected) {
+    bleDevice.gatt.disconnect();
+  }
+}
+
+function onDisconnected() {
+  charComanda = null;
+  charStatus  = null;
+  cmdPending  = false;
+  elDot.className = 'dot disconnected';
+  elTxt.textContent = 'deconectat';
+  btnBLE.textContent = 'CONECTEAZĂ';
+  btnBLE.onclick = conecteazaBLE;
+  btnBLE.disabled = false;
+  afiseaza('OFFLINE');
+  btnUp.disabled = btnDown.disabled = true;
+  addLog('BLE deconectat', 'warn');
+}
+
+// ── STATUS PRIMIT DE LA ESP32 ──
+function onStatusChanged(event) {
+  var val = new TextDecoder().decode(event.target.value);
+  proceseazaStatus(val);
+}
+
+function proceseazaStatus(status) {
+  status = status.trim();
+  addLog('← ' + status, 'info');
+
+  if (status === 'RIDICAT' || status === 'COBORAT') {
+    pozitie    = status;
+    masina     = 'NU';
+    cmdPending = false;
+    if (progTimer) {
+      clearInterval(progTimer); progTimer = null;
+      elPWrap.style.display = 'none';
+      elPBar.style.width = '0%';
+      elTimer.textContent = '';
+    }
+    updateUI();
+  } else if (status === 'SE_RIDICA' || status === 'SE_COBOARA') {
+    afiseaza(status);
+  } else if (status === 'BLOCAT_MASINA') {
+    masina     = 'DA';
+    cmdPending = false;
+    updateUI();
+  }
+}
+
+// ── TRIMITE COMANDA ──
+async function sendCmd(cmd) {
+  if (cmdPending || !charComanda) return;
+  cmdPending = true;
   btnUp.disabled = btnDown.disabled = true;
 
   var stareInter = (cmd === 'RIDICA') ? 'SE_RIDICA' : 'SE_COBOARA';
@@ -478,88 +514,18 @@ function sendCmd(cmd) {
   elMRow.style.display = 'none';
   startProgres(1500);
 
-  ref.update({ comanda: cmd, comanda_timestamp: Date.now() });
-  addLog('▶ ' + cmd, 'ok');
+  try {
+    var encoder = new TextEncoder();
+    await charComanda.writeValue(encoder.encode(cmd));
+    addLog('▶ ' + cmd, 'ok');
+  } catch (err) {
+    addLog('Eroare trimitere: ' + err.message, 'err');
+    cmdPending = false;
+    updateUI();
+  }
 }
 
-// ── FIREBASE: CONEXIUNE ──
-db.ref('.info/connected').on('value', function(s) {
-  var ok = s.val();
-  document.getElementById('fb-dot').className = 'dot ' + (ok ? 'on' : 'off');
-  document.getElementById('fb-txt').textContent = ok ? 'online' : 'offline';
-  if (ok) addLog('Firebase conectat', 'info');
-});
-
-// ── FIREBASE: CITIRE INITIALA ──
-var initDone = false;
-ref.once('value', function(snap) {
-  if (initDone) return;
-  initDone = true;
-  var d = snap.val();
-  if (!d) {
-    ref.set({
-      id: 'PROBA-1', lat: 46.7712, lng: 23.5898,
-      addr: 'TEST · Str. Probei 1', price: 5, hours: '08-18',
-      free: true, status: 'COBORAT', comanda: 'NONE',
-      masina_prezenta: 'NU', ultima_actualizare: Date.now()
-    });
-    pozitie = 'COBORAT';
-    masina  = 'NU';
-  } else {
-    var s = d.status || 'COBORAT';
-    pozitie = (s === 'RIDICAT') ? 'RIDICAT' : 'COBORAT';
-    masina  = d.masina_prezenta || 'NU';
-  }
-  addLog('Init: ' + pozitie + ' | Masina: ' + masina, 'info');
-  updateUI();
-});
-
-// ── FIREBASE: STATUS LIVE (de la ESP32) ──
-// Cand ESP32 scrie RIDICAT sau COBORAT → deblocam butoanele.
-ref.child('status').on('value', function(snap) {
-  var s = snap.val();
-  if (!s || !initDone) return;
-
-  var stareVeche = pozitie;
-
-  if (s === 'RIDICAT' || s === 'COBORAT') {
-    pozitie    = s;
-    cmdPending = false;
-    if (progTimer) {
-      clearInterval(progTimer);
-      progTimer = null;
-      elPWrap.style.display = 'none';
-      elPBar.style.width    = '0%';
-      elTimer.textContent   = '';
-    }
-    if (s !== stareVeche) {
-      addLog('✓ ' + s, s === 'RIDICAT' ? 'ok' : 'err');
-    }
-    updateUI();
-
-  } else if (s === 'SE_RIDICA' || s === 'SE_COBOARA') {
-    afiseaza(s);  // ESP32 confirma miscarea
-
-  } else if (s === 'BLOCAT_MASINA') {
-    cmdPending = false;
-    masina = 'DA';
-    updateUI();
-  }
-});
-
-// ── FIREBASE: SENZOR MASINA (LIVE) ──
-ref.child('masina_prezenta').on('value', function(s) {
-  var val = s.val();
-  if (!val || !initDone) return;
-  var vechi = masina;
-  masina = val;
-  if (masina !== vechi) {
-    addLog('Senzor: ' + masina, masina === 'DA' ? 'warn' : 'info');
-    if (!cmdPending) updateUI();
-  }
-});
-
-// ── BUTOANE cu protectie dublu-tap ──
+// ── BUTOANE ──
 btnUp.addEventListener('click', function(e) {
   e.preventDefault();
   sendCmd('RIDICA');
@@ -567,29 +533,6 @@ btnUp.addEventListener('click', function(e) {
 btnDown.addEventListener('click', function(e) {
   e.preventDefault();
   sendCmd('COBOARA');
-});
-
-// ── PWA INSTALL ──
-var deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault();
-  deferredPrompt = e;
-  setTimeout(function() { document.getElementById('install-banner').style.display = 'block'; }, 2000);
-});
-function installApp() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(function(r) {
-    addLog(r.outcome === 'accepted' ? '✓ Instalat!' : 'Anulat', r.outcome === 'accepted' ? 'ok' : 'warn');
-    deferredPrompt = null;
-    document.getElementById('install-banner').style.display = 'none';
-  });
-}
-function dismissInstall() {
-  document.getElementById('install-banner').style.display = 'none';
-}
-window.addEventListener('appinstalled', function() {
-  addLog('✓ TireaPark instalat!', 'ok');
 });
 </script>
 </body>
