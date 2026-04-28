@@ -127,11 +127,10 @@ body {
   transition: border-color 0.3s;
 }
 
-.status-box.RIDICAT    { border-color: rgba(0,230,77,0.4); }
-.status-box.COBORAT    { border-color: rgba(255,60,60,0.4); }
+.status-box.RIDICAT       { border-color: rgba(0,230,77,0.4); }
+.status-box.COBORAT       { border-color: rgba(255,60,60,0.4); }
 .status-box.SE_RIDICA,
-.status-box.SE_COBOARA { border-color: rgba(250,204,21,0.4); }
-.status-box.MASINA,
+.status-box.SE_COBOARA    { border-color: rgba(250,204,21,0.4); }
 .status-box.BLOCAT_MASINA { border-color: rgba(56,189,248,0.4); }
 
 .status-label {
@@ -145,13 +144,12 @@ body {
   color: var(--dim); transition: color 0.25s, text-shadow 0.25s;
 }
 
-.status-val.RIDICAT    { color: var(--green);  text-shadow: 0 0 20px rgba(0,230,77,0.5); }
-.status-val.COBORAT    { color: var(--red);    text-shadow: 0 0 20px rgba(255,60,60,0.5); }
+.status-val.RIDICAT       { color: var(--green);  text-shadow: 0 0 20px rgba(0,230,77,0.5); }
+.status-val.COBORAT       { color: var(--red);    text-shadow: 0 0 20px rgba(255,60,60,0.5); }
 .status-val.SE_RIDICA,
-.status-val.SE_COBOARA { color: var(--yellow); text-shadow: 0 0 20px rgba(250,204,21,0.5); }
-.status-val.MASINA,
-.status-val.BLOCAT_MASINA { color: var(--blue); text-shadow: 0 0 20px rgba(56,189,248,0.5); }
-.status-val.OFFLINE    { color: var(--dim); }
+.status-val.SE_COBOARA    { color: var(--yellow); text-shadow: 0 0 20px rgba(250,204,21,0.5); }
+.status-val.BLOCAT_MASINA { color: var(--blue);   text-shadow: 0 0 20px rgba(56,189,248,0.5); }
+.status-val.OFFLINE       { color: var(--dim); }
 
 .masina-row { margin-top: 8px; font-size: 10px; color: var(--dim); letter-spacing: 1px; }
 .masina-row .da { color: var(--blue); font-weight: bold; }
@@ -180,7 +178,6 @@ body {
   transition: transform 0.1s, box-shadow 0.1s;
   display: flex; flex-direction: column; align-items: center;
   gap: 4px; position: relative; overflow: hidden;
-  /* Protectie dublu-tap pe mobil */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -333,9 +330,9 @@ var db  = firebase.database();
 var ref = db.ref('blocatoare/PROBA-1');
 
 // ── STARE GLOBALA ──
-var pozitie   = 'COBORAT';
-var masina    = 'NU';
-var cmdPending = false;   // TRUE din momentul apasarii pana cand ESP32 confirma starea finala
+var pozitie    = 'COBORAT';
+var masina     = 'NU';
+var cmdPending = false;  // TRUE din momentul apasarii pana cand ESP32 confirma starea finala
 
 // ── DOM ──
 var elBox   = document.getElementById('status-box');
@@ -368,16 +365,11 @@ function afiseaza(stare) {
 }
 
 // ── UPDATE BUTOANE + UI ──
-// Butoanele sunt active DOAR cand:
-//  - nu exista comanda in asteptare (cmdPending = false)
-//  - nu e masina prezenta
-//  - starea e clara (RIDICAT sau COBORAT)
 function updateUI() {
   if (cmdPending) {
     btnUp.disabled = btnDown.disabled = true;
     return;
   }
-
   if (masina === 'DA') {
     btnUp.disabled   = true;
     btnDown.disabled = true;
@@ -385,9 +377,7 @@ function updateUI() {
     afiseaza('BLOCAT_MASINA');
     return;
   }
-
   elMRow.style.display = 'none';
-
   if (pozitie === 'RIDICAT') {
     btnUp.disabled   = true;
     btnDown.disabled = false;
@@ -408,7 +398,6 @@ function startProgres(durata) {
   var STEP = 50;
   elPWrap.style.display = 'block';
   elPBar.style.width    = '0%';
-
   progTimer = setInterval(function() {
     elapsed += STEP;
     elPBar.style.width  = Math.min((elapsed / durata) * 100, 100) + '%';
@@ -426,24 +415,18 @@ function startProgres(durata) {
 
 // ── COMANDA ──
 // HTML scrie DOAR comanda in Firebase.
-// ESP32 gestioneaza singur status-ul (SE_RIDICA, RIDICAT, etc.)
-// HTML asteapta confirmarea prin listener-ul pe /status
+// ESP32 gestioneaza singur status-ul.
+// HTML asteapta confirmarea prin listener-ul pe /status.
 function sendCmd(cmd) {
-  // Protectie dublu-tap: daca deja e o comanda in curs, ignora complet
-  if (cmdPending) return;
-
-  // Dezactiveaza butoanele IMEDIAT, sincron, inainte de orice altceva
+  if (cmdPending) return;          // protectie dublu-tap
+  cmdPending = true;               // blocare IMEDIATA, sincrona
   btnUp.disabled = btnDown.disabled = true;
-  cmdPending = true;
 
   var stareInter = (cmd === 'RIDICA') ? 'SE_RIDICA' : 'SE_COBOARA';
   afiseaza(stareInter);
   elMRow.style.display = 'none';
-
-  // Porneste bara de progres vizuala (1.2s = cat dureaza motorul pe ESP32)
   startProgres(1200);
 
-  // Scrie DOAR comanda — ESP32 citeste si sterge singur
   ref.update({ comanda: cmd, comanda_timestamp: Date.now() });
   addLog('▶ ' + cmd, 'ok');
 }
@@ -481,8 +464,7 @@ ref.once('value', function(snap) {
 });
 
 // ── FIREBASE: STATUS LIVE (de la ESP32) ──
-// Acesta e singurul loc unde HTML-ul afla ce face blocatorul.
-// Cand ESP32 scrie RIDICAT sau COBORAT, cmdPending se reseteaza.
+// Cand ESP32 scrie RIDICAT sau COBORAT → deblocam butoanele.
 ref.child('status').on('value', function(snap) {
   var s = snap.val();
   if (!s || !initDone) return;
@@ -491,9 +473,7 @@ ref.child('status').on('value', function(snap) {
 
   if (s === 'RIDICAT' || s === 'COBORAT') {
     pozitie    = s;
-    cmdPending = false;   // confirmata starea finala — deblocam butoanele
-
-    // Opreste bara de progres daca mai rula
+    cmdPending = false;
     if (progTimer) {
       clearInterval(progTimer);
       progTimer = null;
@@ -501,16 +481,13 @@ ref.child('status').on('value', function(snap) {
       elPBar.style.width    = '0%';
       elTimer.textContent   = '';
     }
-
     if (s !== stareVeche) {
       addLog('✓ ' + s, s === 'RIDICAT' ? 'ok' : 'err');
     }
     updateUI();
 
   } else if (s === 'SE_RIDICA' || s === 'SE_COBOARA') {
-    // ESP32 confirma ca motorul e in miscare
-    afiseaza(s);
-    // Nu resetam cmdPending, asteptam RIDICAT/COBORAT
+    afiseaza(s);  // ESP32 confirma miscarea
 
   } else if (s === 'BLOCAT_MASINA') {
     cmdPending = false;
@@ -531,7 +508,7 @@ ref.child('masina_prezenta').on('value', function(s) {
   }
 });
 
-// ── BUTOANE: event listeners cu protectie dublu-tap ──
+// ── BUTOANE cu protectie dublu-tap ──
 btnUp.addEventListener('click', function(e) {
   e.preventDefault();
   sendCmd('RIDICA');
