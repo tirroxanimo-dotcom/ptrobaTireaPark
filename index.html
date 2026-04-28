@@ -131,7 +131,8 @@ body {
 .status-box.COBORAT    { border-color: rgba(255,60,60,0.4); }
 .status-box.SE_RIDICA,
 .status-box.SE_COBOARA { border-color: rgba(250,204,21,0.4); }
-.status-box.MASINA     { border-color: rgba(56,189,248,0.4); }
+.status-box.MASINA,
+.status-box.BLOCAT_MASINA { border-color: rgba(56,189,248,0.4); }
 
 .status-label {
   font-size: 9px; letter-spacing: 2px;
@@ -148,7 +149,8 @@ body {
 .status-val.COBORAT    { color: var(--red);    text-shadow: 0 0 20px rgba(255,60,60,0.5); }
 .status-val.SE_RIDICA,
 .status-val.SE_COBOARA { color: var(--yellow); text-shadow: 0 0 20px rgba(250,204,21,0.5); }
-.status-val.MASINA     { color: var(--blue);   text-shadow: 0 0 20px rgba(56,189,248,0.5); }
+.status-val.MASINA,
+.status-val.BLOCAT_MASINA { color: var(--blue); text-shadow: 0 0 20px rgba(56,189,248,0.5); }
 .status-val.OFFLINE    { color: var(--dim); }
 
 .masina-row { margin-top: 8px; font-size: 10px; color: var(--dim); letter-spacing: 1px; }
@@ -178,6 +180,10 @@ body {
   transition: transform 0.1s, box-shadow 0.1s;
   display: flex; flex-direction: column; align-items: center;
   gap: 4px; position: relative; overflow: hidden;
+  /* Protectie dublu-tap pe mobil */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 .btn .btn-icon { font-size: 22px; }
 .btn .btn-lbl  { font-size: 14px; letter-spacing: 1px; }
@@ -276,11 +282,11 @@ body {
   </div>
 
   <div class="buttons">
-    <button class="btn btn-up"   id="btn-up"   onclick="sendCmd('RIDICA')"  disabled>
+    <button class="btn btn-up"   id="btn-up"   disabled>
       <span class="btn-icon">▲</span>
       <span class="btn-lbl">RIDICĂ</span>
     </button>
-    <button class="btn btn-down" id="btn-down" onclick="sendCmd('COBOARA')" disabled>
+    <button class="btn btn-down" id="btn-down" disabled>
       <span class="btn-icon">▼</span>
       <span class="btn-lbl">COBOARĂ</span>
     </button>
@@ -327,11 +333,9 @@ var db  = firebase.database();
 var ref = db.ref('blocatoare/PROBA-1');
 
 // ── STARE GLOBALA ──
-// pozitie = 'RIDICAT' | 'COBORAT'  → pozitia fizica a blocatorului
-// masina  = 'DA' | 'NU'            → senzor masina
-var pozitie  = 'COBORAT';
-var masina   = 'NU';
-var animRuns = false;  // true cat timp ruleaza animatia de 1.2s
+var pozitie   = 'COBORAT';
+var masina    = 'NU';
+var cmdPending = false;   // TRUE din momentul apasarii pana cand ESP32 confirma starea finala
 
 // ── DOM ──
 var elBox   = document.getElementById('status-box');
@@ -356,106 +360,92 @@ function pad(n) { return String(n).padStart(2, '0'); }
 
 // ── AFISEAZA STARE VIZUALA ──
 function afiseaza(stare) {
-  elVal.textContent = stare.replace(/_/g, ' ');
+  var label = stare.replace(/_/g, ' ');
+  if (stare === 'BLOCAT_MASINA') label = 'MASINA';
+  elVal.textContent = label;
   elVal.className   = 'status-val ' + stare;
   elBox.className   = 'status-box ' + stare;
 }
 
 // ── UPDATE BUTOANE + UI ──
-// Aceasta functie este SINGURA care decide starea butoanelor si a UI-ului.
-// Se apeleaza dupa orice schimbare de stare.
-//
-// Reguli clare:
-//  1. Animatie in curs          → ambele OFF, UI = SE_RIDICA / SE_COBOARA (setat separat)
-//  2. Masina = DA               → ambele OFF, UI = MASINA, arata randul masina
-//  3. pozitie = RIDICAT, MA=NU → RIDICA OFF,  COBOARA ON,  UI = RIDICAT
-//  4. pozitie = COBORAT, MA=NU → RIDICA ON,   COBOARA OFF, UI = COBORAT
+// Butoanele sunt active DOAR cand:
+//  - nu exista comanda in asteptare (cmdPending = false)
+//  - nu e masina prezenta
+//  - starea e clara (RIDICAT sau COBORAT)
 function updateUI() {
-  // Cazul 1: animatie in curs — nu schimbam nimic, sendCmd gestioneaza UI-ul
-  if (animRuns) {
+  if (cmdPending) {
     btnUp.disabled = btnDown.disabled = true;
     return;
   }
 
-  // Cazul 2: masina prezenta
   if (masina === 'DA') {
     btnUp.disabled   = true;
     btnDown.disabled = true;
     elMRow.style.display = 'block';
-    afiseaza('MASINA');
+    afiseaza('BLOCAT_MASINA');
     return;
   }
 
-  // Cazul 3 & 4: fara masina
   elMRow.style.display = 'none';
 
   if (pozitie === 'RIDICAT') {
-    btnUp.disabled   = true;   // deja sus, nu mai ridici
-    btnDown.disabled = false;  // poti cobori
+    btnUp.disabled   = true;
+    btnDown.disabled = false;
     afiseaza('RIDICAT');
   } else {
-    btnUp.disabled   = false;  // poti ridica
-    btnDown.disabled = true;   // deja jos
+    btnUp.disabled   = false;
+    btnDown.disabled = true;
     afiseaza('COBORAT');
   }
 }
 
-// ── COMANDA ──
-function sendCmd(cmd) {
-  if (animRuns) return; // ignora daca animatia deja ruleaza
-  var stareInter = (cmd === 'RIDICA') ? 'SE_RIDICA'  : 'SE_COBOARA';
-  var stareFinal = (cmd === 'RIDICA') ? 'RIDICAT'    : 'COBORAT';
-  var eLiber     = (cmd === 'RIDICA');
+// ── PROGRES LOCAL (doar vizual, 1.2s) ──
+var progTimer = null;
 
-  // blocheaza butoanele si arata starea intermediara
-  animRuns = true;
-  btnUp.disabled = btnDown.disabled = true;
-  afiseaza(stareInter);
-  elMRow.style.display = 'none';
-
-  // scrie comanda in Firebase
-  ref.update({ status: stareInter, comanda: cmd, comanda_timestamp: Date.now() });
-  addLog('▶ ' + cmd, 'ok');
-
-  // porneste timer 1.2s
-  var DURATA  = 1200;
+function startProgres(durata) {
+  if (progTimer) { clearInterval(progTimer); progTimer = null; }
   var elapsed = 0;
-  var STEP    = 50;
-
+  var STEP = 50;
   elPWrap.style.display = 'block';
   elPBar.style.width    = '0%';
 
-  var timer = setInterval(function() {
+  progTimer = setInterval(function() {
     elapsed += STEP;
-    elPBar.style.width  = Math.min((elapsed / DURATA) * 100, 100) + '%';
-    var ramas = ((DURATA - elapsed) / 1000).toFixed(1);
+    elPBar.style.width  = Math.min((elapsed / durata) * 100, 100) + '%';
+    var ramas = ((durata - elapsed) / 1000).toFixed(1);
     elTimer.textContent = ramas > 0 ? 'Finalizare în ' + ramas + 's...' : '';
-
-    if (elapsed >= DURATA) {
-      clearInterval(timer);
-
-      // ascunde progresul
+    if (elapsed >= durata) {
+      clearInterval(progTimer);
+      progTimer = null;
       elPWrap.style.display = 'none';
       elPBar.style.width    = '0%';
       elTimer.textContent   = '';
-
-      // actualizeaza starea locala
-      pozitie  = stareFinal;
-      animRuns = false;
-
-      // scrie starea finala in Firebase
-      ref.update({
-        status:             stareFinal,
-        comanda:            'NONE',
-        free:               eLiber,
-        ultima_actualizare: Date.now()
-      });
-      addLog('✓ ' + stareFinal, stareFinal === 'RIDICAT' ? 'ok' : 'err');
-
-      // actualizeaza UI pe baza starii curente (pozitie + masina)
-      updateUI();
     }
   }, STEP);
+}
+
+// ── COMANDA ──
+// HTML scrie DOAR comanda in Firebase.
+// ESP32 gestioneaza singur status-ul (SE_RIDICA, RIDICAT, etc.)
+// HTML asteapta confirmarea prin listener-ul pe /status
+function sendCmd(cmd) {
+  // Protectie dublu-tap: daca deja e o comanda in curs, ignora complet
+  if (cmdPending) return;
+
+  // Dezactiveaza butoanele IMEDIAT, sincron, inainte de orice altceva
+  btnUp.disabled = btnDown.disabled = true;
+  cmdPending = true;
+
+  var stareInter = (cmd === 'RIDICA') ? 'SE_RIDICA' : 'SE_COBOARA';
+  afiseaza(stareInter);
+  elMRow.style.display = 'none';
+
+  // Porneste bara de progres vizuala (1.2s = cat dureaza motorul pe ESP32)
+  startProgres(1200);
+
+  // Scrie DOAR comanda — ESP32 citeste si sterge singur
+  ref.update({ comanda: cmd, comanda_timestamp: Date.now() });
+  addLog('▶ ' + cmd, 'ok');
 }
 
 // ── FIREBASE: CONEXIUNE ──
@@ -469,7 +459,7 @@ db.ref('.info/connected').on('value', function(s) {
 // ── FIREBASE: CITIRE INITIALA ──
 var initDone = false;
 ref.once('value', function(snap) {
-  if (initDone) return; // ruleaza o singura data
+  if (initDone) return;
   initDone = true;
   var d = snap.val();
   if (!d) {
@@ -487,20 +477,68 @@ ref.once('value', function(snap) {
     masina  = d.masina_prezenta || 'NU';
   }
   addLog('Init: ' + pozitie + ' | Masina: ' + masina, 'info');
-  if (!animRuns) updateUI();
+  updateUI();
+});
+
+// ── FIREBASE: STATUS LIVE (de la ESP32) ──
+// Acesta e singurul loc unde HTML-ul afla ce face blocatorul.
+// Cand ESP32 scrie RIDICAT sau COBORAT, cmdPending se reseteaza.
+ref.child('status').on('value', function(snap) {
+  var s = snap.val();
+  if (!s || !initDone) return;
+
+  var stareVeche = pozitie;
+
+  if (s === 'RIDICAT' || s === 'COBORAT') {
+    pozitie    = s;
+    cmdPending = false;   // confirmata starea finala — deblocam butoanele
+
+    // Opreste bara de progres daca mai rula
+    if (progTimer) {
+      clearInterval(progTimer);
+      progTimer = null;
+      elPWrap.style.display = 'none';
+      elPBar.style.width    = '0%';
+      elTimer.textContent   = '';
+    }
+
+    if (s !== stareVeche) {
+      addLog('✓ ' + s, s === 'RIDICAT' ? 'ok' : 'err');
+    }
+    updateUI();
+
+  } else if (s === 'SE_RIDICA' || s === 'SE_COBOARA') {
+    // ESP32 confirma ca motorul e in miscare
+    afiseaza(s);
+    // Nu resetam cmdPending, asteptam RIDICAT/COBORAT
+
+  } else if (s === 'BLOCAT_MASINA') {
+    cmdPending = false;
+    masina = 'DA';
+    updateUI();
+  }
 });
 
 // ── FIREBASE: SENZOR MASINA (LIVE) ──
-// Cand senzorul se schimba in Firebase, actualizam UI imediat
 ref.child('masina_prezenta').on('value', function(s) {
   var val = s.val();
-  if (!val) return;
+  if (!val || !initDone) return;
   var vechi = masina;
   masina = val;
   if (masina !== vechi) {
     addLog('Senzor: ' + masina, masina === 'DA' ? 'warn' : 'info');
-    if (!animRuns) updateUI();
+    if (!cmdPending) updateUI();
   }
+});
+
+// ── BUTOANE: event listeners cu protectie dublu-tap ──
+btnUp.addEventListener('click', function(e) {
+  e.preventDefault();
+  sendCmd('RIDICA');
+});
+btnDown.addEventListener('click', function(e) {
+  e.preventDefault();
+  sendCmd('COBOARA');
 });
 
 // ── PWA INSTALL ──
