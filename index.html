@@ -476,7 +476,7 @@ function sendCmd(cmd) {
   var stareInter = (cmd === 'RIDICA') ? 'SE_RIDICA' : 'SE_COBOARA';
   afiseaza(stareInter);
   elMRow.style.display = 'none';
-  startProgres(1200);
+  startProgres(1500);
 
   ref.update({ comanda: cmd, comanda_timestamp: Date.now() });
   addLog('▶ ' + cmd, 'ok');
